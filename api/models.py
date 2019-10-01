@@ -9,3 +9,6 @@ class Customer(Base):
    name = Column(String)
    address = Column(String)
    email = Column(String)
+   @staticmethod
+   def check_user_existance_and_apply(c1_json,session):
+      return session.query(Customer).filter(Customer.email==c1_json["email"]).first() != None

@@ -1,15 +1,7 @@
 from api import app,jsonify,request,session
 from api.models import Customer
-global session
+
 class Customer_methods:
-    @staticmethod
-    def check_user_existance_and_apply(function_to_apply,c1_json):
-        if session.query(Customer).filter(Customer.email==c1_json["email"]).first() != None:
-            message=function_to_apply(c1_json)#patch, put, delete,get not post
-            session.commit()
-            return (jsonify(message),200)
-        else:
-            return (jsonify({"message":"Bad request buddy."}),400)
     @staticmethod
     def get_user(c1_json):
         a_user=session.query(Customer).filter(Customer.email==c1_json["email"]).first()
@@ -24,14 +16,10 @@ class Customer_methods:
     def patch_user(c1_json):
         session.query(Customer).filter(Customer.email==c1_json["email"]).first()
         return {"message":"User succesfully updated."}
-    @staticmethod
-    def delete_user(c1_json):
-        session.delete(session.query(Customer).filter(Customer.email==c1_json["email"]).first())
-        return {"message":"User succesfully deleted."}
 @app.route('/', methods=['GET'])
 def get():
     c1_json = request.get_json()
-    return Customer_methods.check_user_existance_and_apply(Customer_methods.get_user,c1_json)
+    return Customer.check_user_existance_and_apply(Customer_methods.get_user,c1_json,session)
 @app.route('/', methods=['POST'])
 def post():
     c1_json = request.get_json()
@@ -56,4 +44,8 @@ def patch():
 @app.route('/',methods=['DELETE'])
 def delete():
     c1_json = request.get_json()
-    return Customer_methods.check_user_existance_and_apply(Customer_methods.delete_user,c1_json)
+    if Customer.check_user_existance_and_apply(c1_json,session):
+        session.delete(session.query(Customer).filter(Customer.email==c1_json["email"]).first())
+        return (jsonify({"Message":"User deleted."}),200)
+    else:
+        return (jsonify({"Message":"User could not be found."}),404)
