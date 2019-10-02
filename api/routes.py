@@ -19,7 +19,14 @@ class Customer_methods:
 @app.route('/', methods=['GET'])
 def get():
     c1_json = request.get_json()
-    return Customer.check_user_existance_and_apply(Customer_methods.get_user,c1_json,session)
+    try:
+        if Customer.check_user_existance_and_apply(c1_json,session):
+            a_user=session.query(Customer).filter(Customer.email==c1_json["email"]).first()
+            return (jsonify({"name":a_user.name,"address":a_user.address,"email":a_user.email}),200)
+        else:
+            return (jsonify({"Message":"User could not be found."}),404)
+    except:
+        return (jsonify({"Message":"The database could not be accesed."}),500)
 @app.route('/', methods=['POST'])
 def post():
     c1_json = request.get_json()
