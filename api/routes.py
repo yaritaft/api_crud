@@ -44,8 +44,12 @@ def patch():
 @app.route('/',methods=['DELETE'])
 def delete():
     c1_json = request.get_json()
-    if Customer.check_user_existance_and_apply(c1_json,session):
-        session.delete(session.query(Customer).filter(Customer.email==c1_json["email"]).first())
-        return (jsonify({"Message":"User deleted."}),200)
-    else:
-        return (jsonify({"Message":"User could not be found."}),404)
+    try:
+        if Customer.check_user_existance_and_apply(c1_json,session):
+            session.delete(session.query(Customer).filter(Customer.email==c1_json["email"]).first())
+            session.commit()
+            return (jsonify({"Message":"User deleted."}),200)
+        else:
+            return (jsonify({"Message":"User could not be found."}),404)
+    except:
+        return (jsonify({"Message":"The database could not be accesed."}),500)
